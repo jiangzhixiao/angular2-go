@@ -2,46 +2,44 @@ import {Component} from 'angular2/core';
 import {Router} from 'angular2/router';
 import {CharacterService} from './character.service';
 import {Character} from './character';
+import {OnInit} from "angular2/core";
 
 @Component({
-  selector: 'my-characters',
-  template: `
-    <h2>Select a Character</h2>
-    <ul class="characters">
-      <li *ngFor="#character of characters" (click)="onSelect(character)">
-        <span class="badge">{{character.id}}</span> {{character.name}}
-      </li>
-    </ul>
-    <h2 *ngIf="currentCharacter">
-      {{currentCharacter.name | uppercase}} is my character
-    </h2>
-  `,
-  styles: [`
-    .characters {list-style-type: none; margin-left: 1em; padding: 0; width: 14em;}
-    .characters li { cursor: pointer; }
-    .characters li:hover {color: #369; background-color: #EEE; }
-  `]
+    selector: 'my-characters',
+    templateUrl: 'app/characters.component.html',
+    styleUrls: ['app/characters.component.css']
 })
-export class CharactersComponent {
-  private _characters: Character[];
-  public currentCharacter: Character;
+export class CharactersComponent implements OnInit {
+    private _characters:Character[];
+    public currentCharacter:Character;
 
-  constructor(private _characterService: CharacterService) { }
+    get characters():Character[] {
+        return this._characters;
+    }
 
-  get characters() {
-    return this._characters || this.getCharacters()
-  }
+    constructor(private _characterService:CharacterService,private _router: Router) {
+    }
 
-  onSelect(character: Character) { this.currentCharacter = character; }
 
-  /////////////////
+    ngOnInit() {
+        this._characters = this.getCharacters();
+    }
 
-  private getCharacters() {
-    this._characters = [];
+    onSelect(character:Character) {
+        this.currentCharacter = character;
+    }
 
-    this._characterService.getCharacters()
-      .then(characters => this._characters = characters);
+    /////////////////
 
-    return this._characters;
-  }
+    private getCharacters() {
+        this._characters = [];
+        this.currentCharacter = undefined;
+        this._characterService.getCharacters()
+            .then(characters => this._characters = characters);
+
+        return this._characters;
+    }
+    public gotoDetail() {
+        this._router.navigate(['CharacterDetail', { id: this.currentCharacter.id }]);
+    }
 }
